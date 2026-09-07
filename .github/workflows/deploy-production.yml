@@ -1,0 +1,255 @@
+name: Deploy production website
+
+on:
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: andyhopla-production-deployment
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      AWS_ACCOUNT_ID: '387344700059'
+      AWS_REGION: eu-west-2
+      AWS_PAGER: ''
+      CONTENT_BUCKET: andyhopla-prod-content-c23a464d04681a56f971c5279e
+      DISTRIBUTION_ID: E2D9Q1YJAVZRVA
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Require production branch
+        env:
+          DEPLOY_REF: ${{ github.ref }}
+        run: |
+          set -euo pipefail
+          if [[ "$DEPLOY_REF" != refs/heads/main ]]; then
+            echo '::error::Production deployment requires refs/heads/main.'
+            exit 1
+          fi
+
+      - name: Check out selected commit
+        # actions/checkout v7.0.1
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+
+      - name: Validate manifest and hash source files
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import hashlib
+          import json
+          import os
+          import stat
+          from pathlib import Path
+
+          # Assets first, then HTML. This is the entire upload allowlist.
+          entries = [
+              ('css/styles.css', 'text/css; charset=utf-8'),
+              ('js/main.js', 'application/javascript; charset=utf-8'),
+              ('images/andy-hopla.jpg', 'image/jpeg'),
+              ('favicon.ico', 'image/x-icon'),
+              ('favicon.svg', 'image/svg+xml'),
+              ('index.html', 'text/html; charset=utf-8'),
+              ('404.html', 'text/html; charset=utf-8'),
+              ('pages/about.html', 'text/html; charset=utf-8'),
+              ('pages/experience.html', 'text/html; charset=utf-8'),
+              ('pages/resume.html', 'text/html; charset=utf-8'),
+              ('pages/skills.html', 'text/html; charset=utf-8'),
+              ('pages/projects.html', 'text/html; charset=utf-8'),
+              ('pages/learning.html', 'text/html; charset=utf-8'),
+              ('pages/articles.html', 'text/html; charset=utf-8'),
+              ('pages/contact.html', 'text/html; charset=utf-8'),
+          ]
+          assert len(entries) == len({key for key, _ in entries}) == 15
+          root = Path.cwd().resolve()
+          manifest = []
+          for key, content_type in entries:
+              path = root / key
+              # Reject symlinks in both files and their parent directories.
+              assert not any(p.is_symlink() for p in [path, *path.parents]), key
+              assert stat.S_ISREG(path.lstat().st_mode), key
+              assert path.resolve().is_relative_to(root), key
+              digest = hashlib.sha256(path.read_bytes()).hexdigest()
+              cache = ('public, max-age=0, must-revalidate' if key.endswith('.html')
+                       else 'public, max-age=3600')
+              manifest.append(dict(key=key, content_type=content_type,
+                                   cache_control=cache, sha256=digest))
+              print(f'{digest}  {key}')
+          target = Path(os.environ['RUNNER_TEMP']) / 'andyhopla-manifest.json'
+          target.write_text(json.dumps(manifest), encoding='utf-8')
+          PY
+
+      - name: Authenticate with GitHub OIDC
+        # aws-actions/configure-aws-credentials v6.2.4
+        uses: aws-actions/configure-aws-credentials@cbe3b392738ccf3f987d68400dafcf4b0624a56c
+        with:
+          role-to-assume: arn:aws:iam::387344700059:role/andyhopla-production-content-deploy
+          aws-region: eu-west-2
+          audience: sts.amazonaws.com
+          allowed-account-ids: '387344700059'
+          role-session-name: andyhopla-deploy-${{ github.run_id }}-${{ github.run_attempt }}
+          role-duration-seconds: 3600
+          unset-current-credentials: true
+
+      - name: Confirm AWS identity
+        run: |
+          set -euo pipefail
+          aws sts get-caller-identity --output json > "$RUNNER_TEMP/andyhopla-identity.json"
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          identity = json.loads((Path(os.environ['RUNNER_TEMP']) / 'andyhopla-identity.json').read_text())
+          assert identity['Account'] == os.environ['AWS_ACCOUNT_ID'], 'Unexpected AWS account'
+          print(f"Confirmed account: {identity['Account']}; role: {identity['Arn']}")
+          PY
+
+      - name: Upload approved files with explicit metadata
+        id: upload
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import hashlib
+          import json
+          import os
+          import subprocess
+          from pathlib import Path
+          manifest = json.loads((Path(os.environ['RUNNER_TEMP']) / 'andyhopla-manifest.json').read_text())
+          for item in manifest:
+              key = item['key']
+              assert hashlib.sha256(Path(key).read_bytes()).hexdigest() == item['sha256'], key
+              subprocess.run([
+                  'aws', 's3', 'cp', key,
+                  f"s3://{os.environ['CONTENT_BUCKET']}/{key}",
+                  '--region', os.environ['AWS_REGION'],
+                  '--content-type', item['content_type'],
+                  '--cache-control', item['cache_control'],
+                  '--no-follow-symlinks', '--only-show-errors',
+              ], check=True)
+              print(f'Uploaded {key}', flush=True)
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              output.write(f'file_count={len(manifest)}\n')
+          PY
+
+      - name: Invalidate CloudFront and wait for completion
+        id: invalidation
+        run: |
+          set -euo pipefail
+          invalidation_id=$(aws cloudfront create-invalidation \
+            --distribution-id "$DISTRIBUTION_ID" --paths '/*' \
+            --query 'Invalidation.Id' --output text)
+          [[ -n "$invalidation_id" && "$invalidation_id" != None ]]
+          echo "id=$invalidation_id" >> "$GITHUB_OUTPUT"
+          aws cloudfront wait invalidation-completed \
+            --distribution-id "$DISTRIBUTION_ID" --id "$invalidation_id"
+          status=$(aws cloudfront get-invalidation \
+            --distribution-id "$DISTRIBUTION_ID" --id "$invalidation_id" \
+            --query 'Invalidation.Status' --output text)
+          [[ "$status" == Completed ]]
+
+      - name: Verify public content, routing and security
+        id: verification
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import hashlib
+          import json
+          import os
+          import uuid
+          import urllib.error
+          import urllib.request
+          from pathlib import Path
+
+          class NoRedirect(urllib.request.HTTPRedirectHandler):
+              def redirect_request(self, req, fp, code, msg, headers, newurl):
+                  return None
+
+          # Default TLS certificate verification stays enabled. No redirects hidden.
+          client = urllib.request.build_opener(NoRedirect)
+          def fetch(url):
+              try:
+                  response = client.open(url, timeout=30)
+              except urllib.error.HTTPError as error:
+                  response = error
+              with response:
+                  return response.code, response.headers, response.read()
+
+          def security(headers):
+              for key, value in {
+                  'X-Content-Type-Options': 'nosniff',
+                  'X-Frame-Options': 'DENY',
+                  'Referrer-Policy': 'strict-origin-when-cross-origin',
+              }.items():
+                  assert headers.get(key, '').lower() == value.lower(), f'Missing/incorrect {key}'
+              assert headers.get('Strict-Transport-Security'), 'Missing HSTS'
+
+          manifest = json.loads((Path(os.environ['RUNNER_TEMP']) / 'andyhopla-manifest.json').read_text())
+          for item in manifest:
+              key = item['key']
+              url = 'https://andyhopla.com/' + key
+              status, headers, body = fetch(url)
+              assert status == 200, (url, status)
+              assert hashlib.sha256(body).hexdigest() == item['sha256'], f'Hash mismatch: {key}'
+              security(headers)
+              print(f'PASS 200, hash and headers: {url}')
+          status, headers, body = fetch('https://andyhopla.com/')
+          assert status == 200, ('homepage', status)
+          home_hash = next(i['sha256'] for i in manifest if i['key'] == 'index.html')
+          assert hashlib.sha256(body).hexdigest() == home_hash
+          security(headers)
+
+          for url, target in [
+              ('http://andyhopla.com/', 'https://andyhopla.com/'),
+              ('https://www.andyhopla.com/', 'https://andyhopla.com/'),
+              ('https://www.andyhopla.com/pages/projects.html?source=qa&tag=a&tag=b',
+               'https://andyhopla.com/pages/projects.html?source=qa&tag=a&tag=b'),
+          ]:
+              status, headers, _ = fetch(url)
+              assert status in (301, 308), (url, status)
+              assert headers.get('Location') == target, (url, headers.get('Location'))
+              print(f'PASS permanent redirect: {url} -> {target}')
+
+          missing = f"https://andyhopla.com/qa-missing-{os.environ['GITHUB_RUN_ID']}-{uuid.uuid4().hex}.html"
+          status, headers, body = fetch(missing)
+          assert status == 404, ('missing path', status)
+          error_hash = next(i['sha256'] for i in manifest if i['key'] == '404.html')
+          assert hashlib.sha256(body).hexdigest() == error_hash, 'Unexpected 404 body'
+          assert hashlib.sha256(body).hexdigest() != home_hash, 'Homepage fallback'
+          security(headers)
+          s3_url = f"https://{os.environ['CONTENT_BUCKET']}.s3.eu-west-2.amazonaws.com/index.html"
+          status, _, _ = fetch(s3_url)
+          assert status == 403, ('Anonymous S3 access', status)
+          print('PASS missing path 404 and anonymous S3 access denied')
+          PY
+
+      - name: Write deployment summary
+        if: always()
+        env:
+          DEPLOY_SHA: ${{ github.sha }}
+          FILE_COUNT: ${{ steps.upload.outputs.file_count }}
+          INVALIDATION_ID: ${{ steps.invalidation.outputs.id }}
+          VERIFY_RESULT: ${{ steps.verification.outcome }}
+          UPLOAD_RESULT: ${{ steps.upload.outcome }}
+        run: |
+          set -euo pipefail
+          {
+            echo '## Production deployment'
+            printf '\n- Commit: `%s`\n' "$DEPLOY_SHA"
+            printf -- '- AWS account: `%s`\n' "$AWS_ACCOUNT_ID"
+            printf -- '- S3 bucket: `%s`\n' "$CONTENT_BUCKET"
+            printf -- '- CloudFront distribution: `%s`\n' "$DISTRIBUTION_ID"
+            printf -- '- Deployed files: %s\n' "${FILE_COUNT:-not completed; partial upload possible}"
+            printf -- '- Upload result: %s\n' "$UPLOAD_RESULT"
+            printf -- '- Invalidation ID: `%s`\n' "${INVALIDATION_ID:-not created}"
+            printf -- '- Verification: %s\n' "$VERIFY_RESULT"
+          } >> "$GITHUB_STEP_SUMMARY"
