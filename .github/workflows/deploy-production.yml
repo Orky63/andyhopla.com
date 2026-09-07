@@ -2,6 +2,25 @@ name: Deploy production website
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - index.html
+      - 404.html
+      - pages/about.html
+      - pages/experience.html
+      - pages/resume.html
+      - pages/skills.html
+      - pages/projects.html
+      - pages/learning.html
+      - pages/articles.html
+      - pages/contact.html
+      - css/styles.css
+      - js/main.js
+      - images/andy-hopla.jpg
+      - favicon.ico
+      - favicon.svg
 
 permissions: {}
 
