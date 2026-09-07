@@ -1,0 +1,61 @@
+# Operating system files
+.DS_Store
+._*
+Thumbs.db
+Desktop.ini
+.Spotlight-V100/
+.Trashes/
+
+# Local editor settings and temporary files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+*.tmp
+*.bak
+__pycache__/
+*.py[cod]
+*.log
+
+# Environment files: only a sanitised example belongs in source control
+.env
+.env.*
+!.env.example
+
+# AWS credentials and local CLI configuration
+.aws/
+credentials
+credentials.*
+aws-credentials
+aws-credentials.*
+.aws-credentials
+
+# Private keys and certificate containers
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa
+id_dsa
+id_ecdsa
+id_ed25519
+
+# Terraform working data, state, plans and local configuration
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+*.tfvars
+*.tfvars.json
+*.tfbackend
+backend.hcl
+backend-*.hcl
+backend.*.hcl
+*.backend.hcl
+crash.log
+crash.*.log
+.terraformrc
+terraform.rc
+
+# Keep .terraform.lock.hcl, terraform.tfvars.example, *.tf and workflows eligible.

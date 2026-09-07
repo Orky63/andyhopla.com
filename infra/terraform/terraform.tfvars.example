@@ -1,0 +1,5 @@
+project_name    = "andyhopla"
+environment     = "prod"
+domain_name     = "andyhopla.com"
+aws_region      = "eu-west-2"
+tags            = {}

@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Practical AWS and cloud projects, from live website operation to product development and ongoing learning.">
+  <meta name="theme-color" content="#132333">
+  <link rel="icon" href="../favicon.ico" sizes="32x32">
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml" sizes="any">
+  <title>Projects | Andy Hopla</title>
+  <link rel="stylesheet" href="../css/styles.css">
+  <script src="../js/main.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to content</a>
+  <header class="site-header">
+    <div class="header-inner container">
+      <a class="brand" href="../index.html" aria-label="Andy Hopla — home">Andy Hopla<span class="accent" aria-hidden="true">.</span></a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation" hidden>Menu</button>
+      <nav id="primary-navigation" aria-label="Main navigation">
+        <ul>
+          <li><a href="../index.html">Home</a></li>
+          <li><a href="../pages/about.html">About</a></li>
+          <li><a href="../pages/experience.html">Experience</a></li>
+          <li><a href="../pages/resume.html">Resume</a></li>
+          <li><a href="../pages/skills.html">Skills</a></li>
+          <li><a href="../pages/projects.html" aria-current="page">Projects</a></li>
+          <li><a href="../pages/learning.html">Learning</a></li>
+          <li><a href="../pages/articles.html">Articles</a></li>
+          <li><a href="../pages/contact.html">Contact</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+  <main id="main-content" class="container" tabindex="-1">
+    <section class="hero page-hero" aria-labelledby="page-title">
+      <p class="eyebrow">Projects</p>
+      <h1 id="page-title">Selected work.</h1>
+      <p class="intro">Practical AWS and cloud work, from development through deployment and operation.</p>
+      <p class="hero-description">This portfolio brings together live production work, projects in development and hands-on learning. Each project’s status is shown explicitly so that experimental work is not presented as completed client delivery.</p>
+    </section>
+    <section class="overview" aria-labelledby="nextfoundry-title">
+      <p class="eyebrow">Commercial website</p>
+      <h2 id="nextfoundry-title">NextFoundry — AWS-hosted commercial website</h2>
+      <p><strong>Status: Live</strong></p>
+      <p class="hero-description">NextFoundry is a live website created as both a commercial proposition and a practical AWS/cloud project. It is hosted in AWS using S3, CloudFront, Route 53 and ACM, with a Lambda function supporting website contact-form functionality.</p>
+      <h3>Purpose &amp; practical focus</h3>
+      <p class="hero-description">Taking a website from development through infrastructure, deployment and ongoing operation. Infrastructure has been developed using Infrastructure as Code and deployment automation, including Terraform and GitHub Actions.</p>
+      <ul class="project-tags" aria-label="Relevant technologies">
+        <li>AWS</li>
+        <li>S3</li>
+        <li>CloudFront</li>
+        <li>Route 53</li>
+        <li>ACM</li>
+        <li>Lambda</li>
+        <li>Terraform</li>
+        <li>GitHub Actions</li>
+        <li>Infrastructure as Code</li>
+        <li>Deployment automation</li>
+      </ul>
+    </section>
+    <section class="overview" aria-labelledby="pulse-title">
+      <p class="eyebrow">Product development</p>
+      <h2 id="pulse-title">Pulse — cloud-based SaaS product</h2>
+      <p><strong>Status: In development</strong></p>
+      <p class="hero-description">Pulse is a SaaS product being developed under the NextFoundry brand. It is being designed as an independently deployable application with separate frontend, backend, infrastructure and data boundaries.</p>
+      <h3>Purpose &amp; practical focus</h3>
+      <p class="hero-description">Defining application boundaries and an architecture that supports maintainability, security, monitoring and controlled deployment. Current architectural work includes AWS serverless technologies and Infrastructure as Code.</p>
+      <ul class="project-tags" aria-label="Relevant technologies">
+        <li>AWS serverless</li>
+        <li>Infrastructure as Code</li>
+      </ul>
+    </section>
+    <section class="overview" aria-labelledby="migration-title">
+      <p class="eyebrow">Website migration</p>
+      <h2 id="migration-title">andyhopla.com — Hostinger to AWS migration</h2>
+      <p><strong>Status: In progress</strong></p>
+      <p class="hero-description">This portfolio website is being rebuilt and migrated from Hostinger Website Builder to AWS. The migration is in progress; the target architecture is currently being implemented.</p>
+      <h3>Purpose &amp; practical focus</h3>
+      <p class="hero-description">Moving to a static website hosted in a private S3 bucket and delivered through CloudFront using Origin Access Control, with HTTPS and DNS integration. Infrastructure will be managed using Terraform and deployment automated through GitHub Actions.</p>
+      <ul class="project-tags" aria-label="Target and planned technologies">
+        <li>S3 (target)</li>
+        <li>CloudFront (target)</li>
+        <li>Origin Access Control (target)</li>
+        <li>HTTPS (target)</li>
+        <li>DNS (target)</li>
+        <li>Terraform (planned)</li>
+        <li>GitHub Actions (planned)</li>
+      </ul>
+    </section>
+    <section class="overview" aria-labelledby="learning-title">
+      <p class="eyebrow">Learning projects</p>
+      <h2 id="learning-title">AWS learning &amp; infrastructure projects</h2>
+      <p><strong>Status: Ongoing</strong></p>
+      <p class="hero-description">A collection of hands-on AWS exercises and implementations used to develop practical cloud operations and architecture skills.</p>
+      <h3>Purpose &amp; practical focus</h3>
+      <p class="hero-description">Building practical experience in implementation, troubleshooting, monitoring, security and operational management. The focus is on understanding how cloud infrastructure behaves and how to operate it, beyond completing tutorials.</p>
+      <ul class="project-tags" aria-label="Relevant technologies">
+        <li>IAM</li>
+        <li>S3</li>
+        <li>CloudFront</li>
+        <li>Route 53</li>
+        <li>ACM</li>
+        <li>Lambda</li>
+        <li>CloudWatch</li>
+        <li>Terraform</li>
+        <li>GitHub Actions</li>
+        <li>CI/CD</li>
+        <li>Infrastructure as Code</li>
+      </ul>
+    </section>
+    <a class="text-link" href="../index.html"><span aria-hidden="true">&larr;</span> Back to home</a>
+  </main>
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <p>&copy; <span data-year>2026</span> Andy Hopla</p>
+      <p>Personal professional portfolio <span aria-hidden="true">&middot;</span> Separate from NextFoundry</p>
+    </div>
+  </footer>
+</body>
+</html>
