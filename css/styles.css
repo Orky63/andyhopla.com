@@ -49,6 +49,8 @@ h3 { font-size: 1.2rem; line-height: 1.4; }
 .card-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.25rem; }
 .card { display: block; padding: 1.75rem; background: var(--white); border: 1px solid var(--line); border-radius: 6px; text-decoration: none; }
 .card:hover { border-color: #806021; }
+.contact-cards .card { border: 2px solid var(--gold); }
+.contact-cards .card:hover { border-color: #806021; }
 .card-number { display: block; margin-bottom: 2rem; color: var(--muted); font-size: 0.8rem; }
 .card h3 { display: flex; justify-content: space-between; gap: 1rem; margin-bottom: 0.75rem; }
 .card p { color: var(--muted); margin-bottom: 0; }
