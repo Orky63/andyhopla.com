@@ -70,6 +70,7 @@ jobs:
           import hashlib
           import json
           import os
+          import re
           import stat
           from pathlib import Path
 
@@ -94,6 +95,12 @@ jobs:
               ('pages/contact.html', 'text/html; charset=utf-8'),
           ]
           assert len(entries) == len({key for key, _ in entries}) == 17
+          policy_source = Path('infra/terraform/github_deploy.tf').read_text()
+          policy_keys = re.search(r'github_deploy_object_keys\s*=\s*\[(.*?)\]', policy_source, re.S)
+          assert policy_keys, 'Missing deployment policy file allowlist'
+          allowed_keys = set(re.findall(r'"([^"\n]+)"', policy_keys.group(1)))
+          assert {key for key, _ in entries} == allowed_keys, (
+              'Workflow and Terraform file allowlists differ; update and apply the deployment policy first')
           root = Path.cwd().resolve()
           manifest = []
           for key, content_type in entries:

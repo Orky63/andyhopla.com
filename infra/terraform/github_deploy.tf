@@ -14,6 +14,7 @@ locals {
     "pages/skills.html",
     "pages/projects.html",
     "pages/aws-security.html",
+    "pages/pulse-security.html",
     "pages/learning.html",
     "pages/articles.html",
     "pages/contact.html",
