@@ -13,6 +13,7 @@ on:
       - pages/resume.html
       - pages/skills.html
       - pages/projects.html
+      - pages/aws-security.html
       - pages/learning.html
       - pages/articles.html
       - pages/contact.html
@@ -85,11 +86,12 @@ jobs:
               ('pages/resume.html', 'text/html; charset=utf-8'),
               ('pages/skills.html', 'text/html; charset=utf-8'),
               ('pages/projects.html', 'text/html; charset=utf-8'),
+              ('pages/aws-security.html', 'text/html; charset=utf-8'),
               ('pages/learning.html', 'text/html; charset=utf-8'),
               ('pages/articles.html', 'text/html; charset=utf-8'),
               ('pages/contact.html', 'text/html; charset=utf-8'),
           ]
-          assert len(entries) == len({key for key, _ in entries}) == 15
+          assert len(entries) == len({key for key, _ in entries}) == 16
           root = Path.cwd().resolve()
           manifest = []
           for key, content_type in entries:

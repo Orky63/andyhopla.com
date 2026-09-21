@@ -13,6 +13,7 @@ locals {
     "pages/resume.html",
     "pages/skills.html",
     "pages/projects.html",
+    "pages/aws-security.html",
     "pages/learning.html",
     "pages/articles.html",
     "pages/contact.html",
