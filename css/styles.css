@@ -85,3 +85,13 @@ h3 { font-size: 1.2rem; line-height: 1.4; }
 /* Technology tags on the Projects page. */
 .project-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; max-width: 42rem; padding: 0; margin: 1.5rem 0 0; list-style: none; }
 .project-tags li { padding: 0.25rem 0.65rem; border: 1px solid var(--line); border-radius: 4px; background: var(--white); color: var(--navy); font-size: 0.8rem; }
+
+/* Readable long-form project case studies. */
+.case-study { max-width: 42rem; overflow-wrap: break-word; }
+.case-study .overview { padding-block: 2.75rem; }
+.case-study blockquote { margin: 1.5rem 0; padding: 0.75rem 1.25rem; border-left: 3px solid var(--gold); background: var(--white); }
+.case-study blockquote p { margin-bottom: 0; }
+.architecture-flow { padding: 1rem 1.25rem; border: 1px solid var(--line); border-radius: 4px; background: var(--white); }
+
+.case-study .security-layers { list-style: none; margin: 1.5rem 0; padding: 1.25rem; border: 1px solid var(--line); border-radius: 4px; background: var(--white); text-align: center; }
+.security-layers .layer-arrow { display: block; margin-block: 0.5rem; color: var(--muted); font-size: 1.25rem; }

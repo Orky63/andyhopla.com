@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="How I hardened andyhopla.com on AWS using private S3 storage, CloudFront Origin Access Control, HTTPS and browser security headers.">
+  <meta name="theme-color" content="#132333">
+  <link rel="icon" href="../favicon.ico" sizes="32x32">
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml" sizes="any">
+  <title>Hardening the Security of andyhopla.com on AWS | Andy Hopla</title>
+  <link rel="stylesheet" href="../css/styles.css">
+  <script src="../js/main.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to content</a>
+  <header class="site-header">
+    <div class="header-inner container">
+      <a class="brand" href="../index.html" aria-label="Andy Hopla — home">Andy Hopla<span class="accent" aria-hidden="true">.</span></a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation" hidden>Menu</button>
+      <nav id="primary-navigation" aria-label="Main navigation">
+        <ul>
+          <li><a href="../index.html">Home</a></li>
+          <li><a href="../pages/about.html">About</a></li>
+          <li><a href="../pages/experience.html">Experience</a></li>
+          <li><a href="../pages/resume.html">Resume</a></li>
+          <li><a href="../pages/skills.html">Skills</a></li>
+          <li><a href="../pages/projects.html" aria-current="location">Projects</a></li>
+          <li><a href="../pages/learning.html">Learning</a></li>
+          <li><a href="../pages/articles.html">Articles</a></li>
+          <li><a href="../pages/contact.html">Contact</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+  <main id="main-content" class="container" tabindex="-1">
+    <article aria-labelledby="page-title">
+      <header class="hero page-hero">
+        <p class="eyebrow">Project case study · Cloud security</p>
+        <h1 id="page-title">Hardening the Security of andyhopla.com on AWS</h1>
+        <p class="intro">Moving <strong>andyhopla.com</strong> to AWS wasn't simply an exercise in finding somewhere new to host a website.</p>
+        <p class="hero-description">I wanted to use the migration as a practical AWS project: build the infrastructure myself, automate its deployment, and then look at how I could reduce the security risks of running a public-facing website.</p>
+        <p class="hero-description">The result is a relatively simple architecture, but one where security is built into the design rather than added afterwards.</p>
+      </header>
+      <div class="case-study">
+        <section class="overview" aria-labelledby="starting-point-title">
+          <h2 id="starting-point-title">The starting point</h2>
+          <p>andyhopla.com is a static website, so there was no need for a traditional web server.</p>
+          <p>Instead, I built the site around:</p>
+          <p class="architecture-flow"><strong>Route 53 → CloudFront → private S3 bucket</strong></p>
+          <p>The infrastructure is defined using <strong>Terraform</strong>, with changes managed through <strong>GitHub Actions</strong> rather than manually configuring resources through the AWS console.</p>
+          <p>That immediately gave me an opportunity to apply one of the principles I wanted to follow throughout the project:</p>
+          <blockquote><p>Only expose what actually needs to be exposed.</p></blockquote>
+        </section>
+        <section class="overview" aria-labelledby="private-bucket-title">
+          <h2 id="private-bucket-title">Keeping the S3 bucket private</h2>
+          <p>One of the most important decisions was not to make the S3 bucket hosting the website publicly accessible.</p>
+          <p>The bucket has <strong>S3 Block Public Access</strong> enabled.</p>
+          <p>Visitors therefore don't retrieve the website directly from S3. Instead, requests come through CloudFront using <strong>Origin Access Control (OAC)</strong>.</p>
+          <p>The bucket policy allows CloudFront to retrieve the website content while preventing someone from simply accessing the underlying S3 bucket directly.</p>
+          <p>This gives me a clear separation:</p>
+          <p class="architecture-flow"><strong>Internet → CloudFront → controlled access → S3</strong></p>
+          <p>rather than:</p>
+          <p class="architecture-flow"><strong>Internet → public S3 bucket</strong></p>
+          <p>It's a relatively small architectural decision, but an important security improvement.</p>
+        </section>
+        <section class="overview" aria-labelledby="https-title">
+          <h2 id="https-title">HTTPS everywhere</h2>
+          <p>The next requirement was straightforward: the site should only be accessible securely.</p>
+          <p>I used <strong>AWS Certificate Manager (ACM)</strong> to provide the TLS certificate used by CloudFront.</p>
+          <p>HTTP requests are redirected to HTTPS, meaning visitors don't need to remember to type <code>https://</code>.</p>
+          <p>Certificate renewal is also handled by AWS rather than requiring me to manually replace certificates.</p>
+        </section>
+        <section class="overview" aria-labelledby="headers-title">
+          <h2 id="headers-title">Adding security headers</h2>
+          <p>HTTPS protects the connection, but I also wanted the browser itself to have clearer instructions about how the site should be handled.</p>
+          <p>I therefore added a <strong>CloudFront Response Headers Policy</strong>.</p>
+          <p>This allowed me to introduce browser security controls including headers such as:</p>
+          <ul>
+            <li><strong>Strict-Transport-Security (HSTS)</strong></li>
+            <li><strong>X-Content-Type-Options</strong></li>
+            <li><strong>X-Frame-Options</strong></li>
+            <li><strong>Referrer-Policy</strong></li>
+          </ul>
+          <p>HSTS is particularly useful because it tells supporting browsers that the site should only be accessed using HTTPS.</p>
+          <p>X-Frame-Options helps protect the site from being embedded within another website as part of a clickjacking attack.</p>
+          <p>X-Content-Type-Options prevents browsers from trying to interpret files as a different content type.</p>
+          <p>These aren't replacements for secure application design, but they provide another useful defensive layer.</p>
+        </section>
+        <section class="overview" aria-labelledby="dns-title">
+          <h2 id="dns-title">DNS through Route 53</h2>
+          <p>I migrated the DNS for andyhopla.com to <strong>Amazon Route 53</strong>.</p>
+          <p>This means the DNS configuration now forms part of the AWS architecture rather than being managed separately by the previous hosting provider.</p>
+          <p>The apex domain points towards the CloudFront distribution, and I also configured handling for the <code>www</code> version of the domain so visitors reach the canonical site consistently.</p>
+        </section>
+        <section class="overview" aria-labelledby="no-servers-title">
+          <h2 id="no-servers-title">No servers to patch</h2>
+          <p>One security advantage of this architecture is actually something that isn't there.</p>
+          <p>There is <strong>no EC2 web server</strong>.</p>
+          <p>That means there is:</p>
+          <ul>
+            <li>no operating system exposed to the internet;</li>
+            <li>no SSH service;</li>
+            <li>no web server such as Apache or Nginx to maintain;</li>
+            <li>no server operating system requiring security patches;</li>
+            <li>and no server credentials to manage.</li>
+          </ul>
+          <p>AWS obviously still operates infrastructure underneath these services, but from my perspective the attack surface I am responsible for is considerably smaller.</p>
+          <p>For a static website, introducing an EC2 instance would have added complexity and security responsibilities without providing much benefit.</p>
+        </section>
+        <section class="overview" aria-labelledby="iac-title">
+          <h2 id="iac-title">Infrastructure as Code</h2>
+          <p>Another part of the security model isn't directly visible to somebody visiting the website.</p>
+          <p>The AWS infrastructure is defined using <strong>Terraform</strong>.</p>
+          <p>Rather than manually creating resources through the AWS console, the configuration describes what the environment should look like.</p>
+          <p>Terraform can then show me the proposed changes before anything is applied.</p>
+          <p>That provides something I value from my IT Service Management background: <strong>controlled and repeatable change</strong>.</p>
+          <p>Infrastructure changes become something that can be reviewed rather than a collection of undocumented clicks in a management console.</p>
+        </section>
+        <section class="overview" aria-labelledby="deployment-title">
+          <h2 id="deployment-title">Deployment through GitHub Actions</h2>
+          <p>I also connected the deployment process to <strong>GitHub Actions</strong>.</p>
+          <p>Changes to the website and infrastructure can therefore move through a repeatable CI/CD process.</p>
+          <p>Again, the objective isn't automation simply for the sake of automation.</p>
+          <p>It's about reducing manual intervention and creating a predictable deployment process.</p>
+          <p>From an operational perspective, repeatability matters.</p>
+        </section>
+        <section class="overview" aria-labelledby="layers-title">
+          <h2 id="layers-title">Security as layers</h2>
+          <p>One of the useful lessons from building the site was that there wasn't a single setting that suddenly made it &quot;secure&quot;.</p>
+          <p>Instead, security came from combining a number of relatively simple decisions:</p>
+          <ul class="security-layers" role="list" aria-label="Security layers">
+            <li><strong>Private S3 storage</strong></li>
+            <li><span class="layer-arrow" aria-hidden="true">↓</span><strong>CloudFront Origin Access Control</strong></li>
+            <li><span class="layer-arrow" aria-hidden="true">↓</span><strong>HTTPS and ACM</strong></li>
+            <li><span class="layer-arrow" aria-hidden="true">↓</span><strong>Security response headers</strong></li>
+            <li><span class="layer-arrow" aria-hidden="true">↓</span><strong>Route 53 DNS</strong></li>
+            <li><span class="layer-arrow" aria-hidden="true">↓</span><strong>Infrastructure as Code</strong></li>
+            <li><span class="layer-arrow" aria-hidden="true">↓</span><strong>Controlled CI/CD deployment</strong></li>
+          </ul>
+          <p>Each layer addresses a slightly different risk.</p>
+        </section>
+        <section class="overview" aria-labelledby="deliberate-choices-title">
+          <h2 id="deliberate-choices-title">What I deliberately didn't deploy</h2>
+          <p>Another lesson from the project was recognising when <strong>not</strong> to use an AWS service.</p>
+          <p>It would have been easy to add EC2 instances, load balancers, databases, containers or numerous additional security products simply to demonstrate that I knew how to deploy them.</p>
+          <p>But architecture should be driven by the requirement.</p>
+          <p>andyhopla.com is fundamentally a static website.</p>
+          <p>S3 and CloudFront provide what it needs while keeping the architecture inexpensive, highly available and relatively small from a security perspective.</p>
+          <p>Sometimes good cloud architecture is as much about the services you decide <strong>not</strong> to deploy as the ones you do.</p>
+        </section>
+        <section class="overview" aria-labelledby="lessons-title">
+          <h2 id="lessons-title">What I learned</h2>
+          <p>My background is primarily IT Service Management and Service Operations rather than software development.</p>
+          <p>Projects like this are part of how I'm extending that experience into AWS and cloud operations.</p>
+          <p>What I've found particularly interesting is how many traditional operational principles still apply.</p>
+          <p><strong>Least privilege.</strong></p>
+          <p><strong>Reduce the attack surface.</strong></p>
+          <p><strong>Automate repeatable processes.</strong></p>
+          <p><strong>Control change.</strong></p>
+          <p><strong>Monitor what matters.</strong></p>
+          <p><strong>Don't introduce unnecessary complexity.</strong></p>
+          <p>The technology has changed considerably, but many of the underlying principles haven't.</p>
+          <p>andyhopla.com is a relatively small project, but that's precisely why I've found it useful.</p>
+          <p>It gives me somewhere to experiment with AWS, Terraform, CI/CD and security controls on infrastructure that I actually own and operate — and where I'm responsible for the consequences of the decisions I make.</p>
+        </section>
+      </div>
+    </article>
+    <a class="text-link" href="projects.html"><span aria-hidden="true">&larr;</span> Back to projects</a>
+  </main>
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <p>&copy; <span data-year>2026</span> Andy Hopla</p>
+      <p>Personal professional portfolio <span aria-hidden="true">&middot;</span> Separate from NextFoundry</p>
+    </div>
+  </footer>
+</body>
+</html>
