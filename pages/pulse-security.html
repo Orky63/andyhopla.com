@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="How I strengthened security in Pulse across website scanning, report access, email delivery, AWS deployment and analytics privacy.">
+  <meta name="theme-color" content="#132333">
+  <link rel="icon" href="../favicon.ico" sizes="32x32">
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml" sizes="any">
+  <title>Strengthening security in Pulse | Andy Hopla</title>
+  <link rel="stylesheet" href="../css/styles.css">
+  <script src="../js/main.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to content</a>
+  <header class="site-header">
+    <div class="header-inner container">
+      <a class="brand" href="../index.html" aria-label="Andy Hopla — home">Andy Hopla<span class="accent" aria-hidden="true">.</span></a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation" hidden>Menu</button>
+      <nav id="primary-navigation" aria-label="Main navigation">
+        <ul>
+          <li><a href="../index.html">Home</a></li>
+          <li><a href="../pages/about.html">About</a></li>
+          <li><a href="../pages/experience.html">Experience</a></li>
+          <li><a href="../pages/resume.html">Resume</a></li>
+          <li><a href="../pages/skills.html">Skills</a></li>
+          <li><a href="../pages/projects.html" aria-current="location">Projects</a></li>
+          <li><a href="../pages/learning.html">Learning</a></li>
+          <li><a href="../pages/articles.html">Articles</a></li>
+          <li><a href="../pages/contact.html">Contact</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+  <main id="main-content" class="container" tabindex="-1">
+    <article aria-labelledby="page-title">
+      <header class="hero page-hero">
+        <p class="eyebrow">Project case study · Application &amp; cloud security</p>
+        <h1 id="page-title">Strengthening security in Pulse</h1>
+        <p class="intro">Pulse is my website health checker, built to help small businesses understand how their websites perform and what needs improving.</p>
+        <p class="hero-description">As I prepared it for production, I strengthened security across the scanner, report storage and deployment process.</p>
+      </header>
+      <div class="case-study">
+        <section class="overview" aria-labelledby="scanner-title">
+          <h2 id="scanner-title">Protecting the scanner</h2>
+          <p>A key focus was how Pulse handles website addresses. A public scanner could be misused to request internal services, so I added URL validation, checks for private network addresses and validation of redirect destinations. Timeouts, download limits and rate limiting also help reduce abuse and excessive resource use.</p>
+        </section>
+        <section class="overview" aria-labelledby="reports-title">
+          <h2 id="reports-title">Protecting scan reports</h2>
+          <p>I improved how scan reports are protected. Reports are now stored on the server and tied to the browser session that created them, using random identifiers and protected cookies. Knowing a report’s URL alone does not grant access from another browser, and report access expires after a configurable period.</p>
+        </section>
+        <section class="overview" aria-labelledby="email-title">
+          <h2 id="email-title">Keeping emailed reports authentic</h2>
+          <p>The email flow uses those same protections. Before sending a report, the server checks ownership and expiry, then uses the stored results. This prevents someone from changing scores or recommendations in their browser and submitting them as an authentic report.</p>
+        </section>
+        <section class="overview" aria-labelledby="deployment-title">
+          <h2 id="deployment-title">Strengthening AWS deployment</h2>
+          <p>I also strengthened the AWS deployment configuration with encrypted storage, restricted permissions and GitHub OIDC authentication, avoiding long-lived AWS deployment keys. Production deployments include automated checks and health verification.</p>
+        </section>
+        <section class="overview" aria-labelledby="privacy-title">
+          <h2 id="privacy-title">Respecting privacy</h2>
+          <p>Privacy was part of the work too: product analytics record usage events without storing IP addresses, browser user agents or scanned website URLs.</p>
+        </section>
+        <section class="overview" aria-labelledby="foundation-title">
+          <h2 id="foundation-title">A stronger foundation</h2>
+          <p>These changes give Pulse a stronger foundation as it grows, while keeping the experience simple for the people using it.</p>
+        </section>
+      </div>
+    </article>
+    <a class="text-link" href="projects.html"><span aria-hidden="true">&larr;</span> Back to projects</a>
+  </main>
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <p>&copy; <span data-year>2026</span> Andy Hopla</p>
+      <p>Personal professional portfolio <span aria-hidden="true">&middot;</span> Separate from NextFoundry</p>
+    </div>
+  </footer>
+</body>
+</html>
