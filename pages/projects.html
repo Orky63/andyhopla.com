@@ -59,6 +59,70 @@
         <li>Deployment automation</li>
       </ul>
     </section>
+    <section class="overview" aria-labelledby="synthetic-monitoring-title">
+      <p class="eyebrow">Monitoring &amp; FinOps</p>
+      <h2 id="synthetic-monitoring-title">AWS Synthetic Monitoring &amp; Cost Optimisation</h2>
+      <div class="case-study">
+        <p><strong>Client:</strong> Next Foundry — “Client Zero”<br>
+          <strong>AWS Services:</strong> Amazon CloudWatch Synthetics, CloudWatch, Amazon S3<br>
+          <strong>Infrastructure:</strong> Terraform<br>
+          <strong>Focus:</strong> Monitoring, Infrastructure as Code, FinOps, Cost Optimisation</p>
+
+        <h3>The Challenge</h3>
+        <p>How frequently should a business website test itself?</p>
+        <p>The answer should reflect the importance and usage of the service—not simply the default configuration of the monitoring platform.</p>
+        <p>Using Next Foundry as “Client Zero,” I wanted to implement automated monitoring that could independently confirm that the website was available and responding correctly.</p>
+
+        <h3>The Solution</h3>
+        <p>I deployed an <strong>Amazon CloudWatch Synthetics canary</strong> to perform automated homepage checks.</p>
+        <p>The monitoring infrastructure was created and managed through <strong>Terraform</strong>, keeping the configuration repeatable, version-controlled and consistent with the wider Next Foundry AWS environment.</p>
+        <p>Initially, the canary ran <strong>once every hour</strong>.</p>
+        <p>Technically, the solution worked exactly as intended.</p>
+        <p>However, AWS subsequently notified me that <strong>88 of the 100 monthly free canary runs had already been consumed</strong>.</p>
+        <p>That prompted a review of whether the monitoring frequency was proportionate to the service being monitored.</p>
+
+        <h3>The Review</h3>
+        <p>Rather than simply accepting the original configuration, I assessed:</p>
+        <ul>
+          <li>How quickly a website failure genuinely needed to be detected</li>
+          <li>Current traffic levels and business criticality</li>
+          <li>Successful and failed canary-run retention</li>
+          <li>S3 artifact retention</li>
+          <li>CloudWatch monitoring requirements</li>
+          <li>The expected cost once the free allowance was exceeded</li>
+        </ul>
+        <p>An hourly schedule would generate approximately <strong>720 synthetic checks per month</strong>.</p>
+        <p>For a high-volume transactional or revenue-critical service, that frequency—or considerably more frequent monitoring—could be entirely justified.</p>
+        <p>For the current Next Foundry website, however, 720 checks per month provided limited additional business value.</p>
+
+        <h3>The Optimisation</h3>
+        <p>I revised the Terraform configuration to reduce the canary frequency while retaining meaningful availability checks throughout the day.</p>
+        <p>The change was deployed through the existing <strong>GitHub Actions CI/CD workflow</strong>, maintaining the Infrastructure as Code approach rather than making an unmanaged console change.</p>
+        <p>The website remains automatically monitored, but the monitoring now reflects the actual operating requirements of the service.</p>
+
+        <h3>The Outcome</h3>
+        <p>The project reduced unnecessary synthetic monitoring activity while retaining useful availability assurance.</p>
+        <p>More importantly, it demonstrated a wider cloud engineering principle:</p>
+        <p><strong>More monitoring is not automatically better monitoring.</strong></p>
+        <p>Every test, log, metric and retained artifact should have a purpose. Otherwise, a technically sound control can increase cloud consumption and operational overhead without materially improving the customer outcome.</p>
+        <p>Cloud cost optimisation does not begin by removing useful controls.</p>
+        <p><strong>It begins by making those controls proportionate to the service they protect.</strong></p>
+
+        <h3>Skills Demonstrated</h3>
+        <ul class="project-tags" aria-label="Skills demonstrated">
+          <li>AWS CloudWatch Synthetics</li>
+          <li>CloudWatch Monitoring</li>
+          <li>Amazon S3</li>
+          <li>Terraform</li>
+          <li>Infrastructure as Code</li>
+          <li>GitHub Actions</li>
+          <li>CI/CD</li>
+          <li>FinOps</li>
+          <li>AWS Cost Optimisation</li>
+          <li>Operational Monitoring</li>
+        </ul>
+      </div>
+    </section>
     <section class="overview" aria-labelledby="migration-title">
       <p class="eyebrow">Website migration</p>
       <h2 id="migration-title">andyhopla.com — Hostinger to AWS migration</h2>
